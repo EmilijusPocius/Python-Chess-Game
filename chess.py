@@ -473,41 +473,59 @@ class King(Pieces):
                 checking_moves_list.append((x, y))
         return checking_moves_list
 
-w_pawn1   = Pawn  ((0, 6), "w", w_images[0])
-w_pawn2   = Pawn  ((1, 6), "w", w_images[0])
-w_pawn3   = Pawn  ((2, 6), "w", w_images[0])
-w_pawn4   = Pawn  ((3, 6), "w", w_images[0])
-w_pawn5   = Pawn  ((4, 6), "w", w_images[0])
-w_pawn6   = Pawn  ((5, 6), "w", w_images[0])
-w_pawn7   = Pawn  ((6, 6), "w", w_images[0])
-w_pawn8   = Pawn  ((7, 6), "w", w_images[0])
-w_rook1   = Rook  ((0, 7), "w", w_images[1])
-w_rook2   = Rook  ((7, 7), "w", w_images[1])
-w_knight1 = Knight((1, 7), "w", w_images[2])
-w_knight2 = Knight((6, 7), "w", w_images[2])
-w_bishop1 = Bishop((2, 7), "w", w_images[3])
-w_bishop2 = Bishop((5, 7), "w", w_images[3])
-w_queen   = Queen ((3, 7), "w", w_images[4])
-w_king    = King  ((4, 7), "w", w_images[5])
+class PieceFactory:
+    @staticmethod
+    def create_piece(piece_type, position, color, image):
+        if piece_type == 'Pawn':
+            return Pawn(position, color, image)
+        elif piece_type == 'Rook':
+            return Rook(position, color, image)
+        elif piece_type == 'Knight':
+            return Knight(position, color, image)
+        elif piece_type == 'Bishop':
+            return Bishop(position, color, image)
+        elif piece_type == 'Queen':
+            return Queen(position, color, image)
+        elif piece_type == 'King':
+            return King(position, color, image)
+        else:
+            raise ValueError(f"Unknown piece type: {piece_type}")
+
+w_pawn1   = PieceFactory.create_piece('Pawn', (0, 6), "w", w_images[0])
+w_pawn2   = PieceFactory.create_piece('Pawn', (1, 6), "w", w_images[0])
+w_pawn3   = PieceFactory.create_piece('Pawn', (2, 6), "w", w_images[0])
+w_pawn4   = PieceFactory.create_piece('Pawn', (3, 6), "w", w_images[0])
+w_pawn5   = PieceFactory.create_piece('Pawn', (4, 6), "w", w_images[0])
+w_pawn6   = PieceFactory.create_piece('Pawn', (5, 6), "w", w_images[0])
+w_pawn7   = PieceFactory.create_piece('Pawn', (6, 6), "w", w_images[0])
+w_pawn8   = PieceFactory.create_piece('Pawn', (7, 6), "w", w_images[0])
+w_rook1   = PieceFactory.create_piece('Rook', (0, 7), "w", w_images[1])
+w_rook2   = PieceFactory.create_piece('Rook', (7, 7), "w", w_images[1])
+w_knight1 = PieceFactory.create_piece('Knight', (1, 7), "w", w_images[2])
+w_knight2 = PieceFactory.create_piece('Knight', (6, 7), "w", w_images[2])
+w_bishop1 = PieceFactory.create_piece('Bishop', (2, 7), "w", w_images[3])
+w_bishop2 = PieceFactory.create_piece('Bishop', (5, 7), "w", w_images[3])
+w_queen   = PieceFactory.create_piece('Queen', (3, 7), "w", w_images[4])
+w_king    = PieceFactory.create_piece('King', (4, 7), "w", w_images[5])
 w_pieces = [w_pawn1, w_pawn2, w_pawn3, w_pawn4, w_pawn5, w_pawn6, w_pawn7, w_pawn8, w_rook1,
 w_rook2, w_knight1, w_knight2, w_bishop1, w_bishop2, w_queen, w_king]
 
-b_pawn1   = Pawn  ((0, 1), "b", b_images[0])
-b_pawn2   = Pawn  ((1, 1), "b", b_images[0])
-b_pawn3   = Pawn  ((2, 1), "b", b_images[0])
-b_pawn4   = Pawn  ((3, 1), "b", b_images[0])
-b_pawn5   = Pawn  ((4, 1), "b", b_images[0])
-b_pawn6   = Pawn  ((5, 1), "b", b_images[0])
-b_pawn7   = Pawn  ((6, 1), "b", b_images[0])
-b_pawn8   = Pawn  ((7, 1), "b", b_images[0])
-b_rook1   = Rook  ((0, 0), "b", b_images[1])
-b_rook2   = Rook  ((7, 0), "b", b_images[1])
-b_knight1 = Knight((1, 0), "b", b_images[2])
-b_knight2 = Knight((6, 0), "b", b_images[2])
-b_bishop1 = Bishop((2, 0), "b", b_images[3])
-b_bishop2 = Bishop((5, 0), "b", b_images[3])
-b_queen   = Queen ((3, 0), "b", b_images[4])
-b_king    = King  ((4, 0), "b", b_images[5])
+b_pawn1   = PieceFactory.create_piece('Pawn', (0, 1), "b", b_images[0])
+b_pawn2   = PieceFactory.create_piece('Pawn', (1, 1), "b", b_images[0])
+b_pawn3   = PieceFactory.create_piece('Pawn', (2, 1), "b", b_images[0])
+b_pawn4   = PieceFactory.create_piece('Pawn', (3, 1), "b", b_images[0])
+b_pawn5   = PieceFactory.create_piece('Pawn', (4, 1), "b", b_images[0])
+b_pawn6   = PieceFactory.create_piece('Pawn', (5, 1), "b", b_images[0])
+b_pawn7   = PieceFactory.create_piece('Pawn', (6, 1), "b", b_images[0])
+b_pawn8   = PieceFactory.create_piece('Pawn', (7, 1), "b", b_images[0])
+b_rook1   = PieceFactory.create_piece('Rook', (0, 0), "b", b_images[1])
+b_rook2   = PieceFactory.create_piece('Rook', (7, 0), "b", b_images[1])
+b_knight1 = PieceFactory.create_piece('Knight', (1, 0), "b", b_images[2])
+b_knight2 = PieceFactory.create_piece('Knight', (6, 0), "b", b_images[2])
+b_bishop1 = PieceFactory.create_piece('Bishop', (2, 0), "b", b_images[3])
+b_bishop2 = PieceFactory.create_piece('Bishop', (5, 0), "b", b_images[3])
+b_queen   = PieceFactory.create_piece('Queen', (3, 0), "b", b_images[4])
+b_king    = PieceFactory.create_piece('King', (4, 0), "b", b_images[5])
 b_pieces = [b_pawn1, b_pawn2, b_pawn3, b_pawn4, b_pawn5, b_pawn6, b_pawn7, b_pawn8, b_rook1,
 b_rook2, b_knight1, b_knight2, b_bishop1, b_bishop2, b_queen, b_king]
 

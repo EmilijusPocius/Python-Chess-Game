@@ -17,6 +17,20 @@ class Pieces(ABC):
     def checking_moves(self, w_pieces, b_pieces):
         pass
 
+    def _is_valid_move(self, w_pieces, b_pieces, new_position, original_position, enemy_piece):
+        __is_valid = False
+        self.position = new_position
+        if enemy_piece is not None:
+            enemy_piece_original_position = enemy_piece.position
+            enemy_piece.position = (-10, -10)
+        if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+            __is_valid = True
+        self.position = original_position
+        if enemy_piece is not None:
+            enemy_piece.position = enemy_piece_original_position
+    
+        return __is_valid
+
 class Pawn(Pieces):
     def __init__(self, position, color, image):
         super().__init__(position, color, image)
@@ -32,101 +46,53 @@ class Pawn(Pieces):
             #Moving
             if y == 6 and (x, y-1) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces] \
                 and (x, y-2) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces]:
-                self.position = (x, y-2)
-                if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                    available_moves_list.append(self.position)
-                self.position = (x, y)
+                if self._is_valid_move(w_pieces, b_pieces, (x, y-2), (x, y), None):
+                    available_moves_list.append((x, y-2))
             if (x, y-1) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces]:
-                self.position = (x, y-1)
-                if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                    available_moves_list.append(self.position)
-                self.position = (x, y)
+                if self._is_valid_move(w_pieces, b_pieces, (x, y-1), (x, y), None):
+                    available_moves_list.append((x, y-1))
             #Taking
             for piece in b_pieces:
                 if (x-1, y-1) == (piece.position[0], piece.position[1]):
-                    self.position = (x-1, y-1)
-                    piece_original_position = piece.position
-                    piece.position = (-10, -10)
-                    if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                        available_moves_list.append(self.position)
-                    self.position = (x, y)
-                    piece.position = piece_original_position
+                    if self._is_valid_move(w_pieces, b_pieces, (x-1, y-1), (x, y), piece):
+                        available_moves_list.append((x-1, y-1))
                 if (x+1, y-1) == (piece.position[0], piece.position[1]):
-                    self.position = (x+1, y-1)
-                    piece_original_position = piece.position
-                    piece.position = (-10, -10)
-                    if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                        available_moves_list.append(self.position)
-                    self.position = (x, y)
-                    piece.position = piece_original_position
+                    if self._is_valid_move(w_pieces, b_pieces, (x+1, y-1), (x, y), piece):
+                        available_moves_list.append((x+1, y-1))
                 #En passant
                 if isinstance(piece, Pawn) and piece.can_get_en_passant == True:
                     if (x-1, y) == (piece.position[0], piece.position[1]):
-                        self.position = (x-1, y-1)
-                        piece_original_position = piece.position
-                        piece.position = (-10, -10)
-                        if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                            available_moves_list.append(self.position)
-                        self.position = (x, y)
-                        piece.position = piece_original_position
+                        if self._is_valid_move(w_pieces, b_pieces, (x-1, y-1), (x, y), piece):
+                            available_moves_list.append((x-1, y-1))
                     if (x+1, y) == (piece.position[0], piece.position[1]):
-                        self.position = (x+1, y-1)
-                        piece_original_position = piece.position
-                        piece.position = (-10, -10)
-                        if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                            available_moves_list.append(self.position)
-                        self.position = (x, y)
-                        piece.position = piece_original_position
+                        if self._is_valid_move(w_pieces, b_pieces, (x+1, y-1), (x, y), piece):
+                            available_moves_list.append((x+1, y-1))
         #Black Pawns
         if self.color == "b":
             #Moving
             if y == 1 and (x, y+1) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces] \
                 and (x, y+2) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces]:
-                self.position = (x, y+2)
-                if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                    available_moves_list.append(self.position)
-                self.position = (x, y)
+                if self._is_valid_move(w_pieces, b_pieces, (x, y+2), (x, y), None):
+                    available_moves_list.append((x, y+2))
             if (x, y+1) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces]:
-                self.position = (x, y+1)
-                if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                    available_moves_list.append(self.position)
-                self.position = (x, y)
+                if self._is_valid_move(w_pieces, b_pieces, (x, y+1), (x, y), None):
+                    available_moves_list.append((x, y+1))
             #Taking
             for piece in w_pieces:
                 if (x-1, y+1) == (piece.position[0], piece.position[1]):
-                    self.position = (x-1, y+1)
-                    piece_original_position = piece.position
-                    piece.position = (-10, -10)
-                    if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                        available_moves_list.append(self.position)
-                    self.position = (x, y)
-                    piece.position = piece_original_position
+                    if self._is_valid_move(w_pieces, b_pieces, (x-1, y+1), (x, y), piece):
+                        available_moves_list.append((x-1, y+1))
                 if (x+1, y+1) == (piece.position[0], piece.position[1]):
-                    self.position = (x+1, y+1)
-                    piece_original_position = piece.position
-                    piece.position = (-10, -10)
-                    if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                        available_moves_list.append(self.position)
-                    self.position = (x, y)
-                    piece.position = piece_original_position
+                    if self._is_valid_move(w_pieces, b_pieces, (x+1, y+1), (x, y), piece):
+                        available_moves_list.append((x+1, y+1))
                 #En passant
                 if isinstance(piece, Pawn) and piece.can_get_en_passant == True:
                     if (x-1, y) == (piece.position[0], piece.position[1]):
-                        self.position = (x-1, y+1)
-                        piece_original_position = piece.position
-                        piece.position = (-10, -10)
-                        if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                            available_moves_list.append(self.position)
-                        self.position = (x, y)
-                        piece.position = piece_original_position
+                        if self._is_valid_move(w_pieces, b_pieces, (x-1, y+1), (x, y), piece):
+                            available_moves_list.append((x-1, y+1))
                     if (x+1, y) == (piece.position[0], piece.position[1]):
-                        self.position = (x+1, y+1)
-                        piece_original_position = piece.position
-                        piece.position = (-10, -10)
-                        if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                            available_moves_list.append(self.position)
-                        self.position = (x, y)
-                        piece.position = piece_original_position
+                        if self._is_valid_move(w_pieces, b_pieces, (x+1, y+1), (x, y), piece):
+                            available_moves_list.append((x+1, y+1))
         
         return available_moves_list
 
@@ -166,29 +132,21 @@ class Rook(Pieces):
                             to_break = True
                             break
                         else:
-                            piece_original_position = piece.position
-                            piece.position = (-10, -10)
-                            self.position = (x, y)
-                            if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
                                 available_moves_list.append((x, y))
-                            piece.position = piece_original_position
-                            self.position = original_position
                             to_break = True
                             break
-
                 if to_break:
                     break
 
-                self.position = (x, y)
-                if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, None):
                     available_moves_list.append((x, y))
-                self.position = original_position
 
                 x += direction_x
                 y += direction_y
                 
         return available_moves_list
-    
+
     def checking_moves(self, w_pieces, b_pieces):
         checking_moves_list = []
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -213,33 +171,21 @@ class Knight(Pieces):
             x, y = self.position[0] + direction_x, self.position[1] + direction_y
             if 0 <= x <= 7 and 0 <= y <= 7:
                 if (x, y) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces]:
-                    self.position = (x, y)
-                    if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                    if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, None):
                         available_moves_list.append((x, y))
-                    self.position = original_position
                 elif self.color == "w" and (x, y) in [(piece.position[0], piece.position[1]) for piece in b_pieces]:
                     for piece in b_pieces:
                         if piece.position == (x, y):
-                            piece_original_position = piece.position
-                            piece.position = (-10, -10)
-                            self.position = (x, y)
-                            if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
                                 available_moves_list.append((x, y))
-                            piece.position = piece_original_position
-                            self.position = original_position
                 elif self.color == "b" and (x, y) in [(piece.position[0], piece.position[1]) for piece in w_pieces]:
                      for piece in w_pieces:
                         if piece.position == (x, y):
-                            piece_original_position = piece.position
-                            piece.position = (-10, -10)
-                            self.position = (x, y)
-                            if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
                                 available_moves_list.append((x, y))
-                            piece.position = piece_original_position
-                            self.position = original_position
 
         return available_moves_list
-    
+
     def checking_moves(self, w_pieces, b_pieces):
         checking_moves_list = []
         directions = [(1, -2), (-1, -2), (-2, -1), (-2, 1), (-1, 2), (1, 2), (2, 1), (2, -1)]
@@ -270,29 +216,21 @@ class Bishop(Pieces):
                             to_break = True
                             break
                         else:
-                            piece_original_position = piece.position
-                            piece.position = (-10, -10)
-                            self.position = (x, y)
-                            if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
                                 available_moves_list.append((x, y))
-                            piece.position = piece_original_position
-                            self.position = original_position
                             to_break = True
                             break
-
                 if to_break:
                     break
 
-                self.position = (x, y)
-                if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, None):
                     available_moves_list.append((x, y))
-                self.position = original_position
 
                 x += direction_x
                 y += direction_y
                 
         return available_moves_list
-    
+
     def checking_moves(self, w_pieces, b_pieces):
         checking_moves_list = []
         directions = [(1, 1), (-1, 1), (1, -1), (-1, -1)]
@@ -323,29 +261,21 @@ class Queen(Pieces):
                             to_break = True
                             break
                         else:
-                            piece_original_position = piece.position
-                            piece.position = (-10, -10)
-                            self.position = (x, y)
-                            if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
                                 available_moves_list.append((x, y))
-                            piece.position = piece_original_position
-                            self.position = original_position
                             to_break = True
                             break
-
                 if to_break:
                     break
 
-                self.position = (x, y)
-                if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king):
+                if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, None):
                     available_moves_list.append((x, y))
-                self.position = original_position
 
                 x += direction_x
                 y += direction_y
                 
         return available_moves_list
-    
+
     def checking_moves(self, w_pieces, b_pieces):
         checking_moves_list = []
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1)]
@@ -385,29 +315,21 @@ class King(Pieces):
                 if self.color == "w":
                     if (x, y) not in all_black_checking_moves_list:
                         if (x, y) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces]:
-                            self.position = (x, y)
-                            if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, None):
                                 available_moves_list.append((x, y))
-                            self.position = original_position
                         elif (x, y) in [(piece.position[0], piece.position[1]) for piece in b_pieces]:
                             for piece in b_pieces:
                                 if (x, y) == piece.position:
-                                    self.position = (x, y)
-                                    if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                                    if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
                                         available_moves_list.append((x, y))
-                                    self.position = original_position
                 elif self.color == "b":
                     if (x, y) not in all_white_checking_moves_list:
                         if (x, y) not in [(piece.position[0], piece.position[1]) for piece in w_pieces + b_pieces]:
-                            self.position = (x, y)
-                            if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, None):
                                 available_moves_list.append((x, y))
-                            self.position = original_position
                         elif (x, y) in [(piece.position[0], piece.position[1]) for piece in w_pieces]:
-                            self.position = (x, y)
-                            if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
                                 available_moves_list.append((x, y))
-                            self.position = original_position
         #Castling
         if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king) and self.can_castle:
             directions = [(-1, 0), (1, 0)]
@@ -420,37 +342,26 @@ class King(Pieces):
                             if isinstance(piece, Rook):
                                 if self.color == "w" and piece.color == "w" and piece.can_castle:
                                     if piece.position[0] < self.position[0]:
-                                        self.position = (original_position[0] - 1, original_position[1])
-                                        if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                                            self.position = (original_position[0] - 2, original_position[1])
-                                            if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                                        if self._is_valid_move(w_pieces, b_pieces, (original_position[0] - 1, original_position[1]), original_position, None):
+                                            if self._is_valid_move(w_pieces, b_pieces, (original_position[0] - 2, original_position[1]), original_position, None):
                                                 available_moves_list.append((original_position[0] - 2, original_position[1]))
                                     if piece.position[0] > self.position[0]:
-                                        self.position = (original_position[0] + 1, original_position[1])
-                                        if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                                            self.position = (original_position[0] + 2, original_position[1])
-                                            if not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                                        if self._is_valid_move(w_pieces, b_pieces, (original_position[0] + 1, original_position[1]), original_position, None):
+                                            if self._is_valid_move(w_pieces, b_pieces, (original_position[0] + 2, original_position[1]), original_position, None):
                                                 available_moves_list.append((original_position[0] + 2, original_position[1]))
-                                    self.position = original_position
 
                                 elif self.color == "b" and piece.color == "b" and piece.can_castle:
                                     if piece.position[0] < self.position[0]:
-                                        self.position = (original_position[0] - 1, original_position[1])
-                                        if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                                            self.position = (original_position[0] - 2, original_position[1])
-                                            if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                                        if self._is_valid_move(w_pieces, b_pieces, (original_position[0] - 1, original_position[1]), original_position, None):
+                                            if self._is_valid_move(w_pieces, b_pieces, (original_position[0] - 2, original_position[1]), original_position, None):
                                                 available_moves_list.append((original_position[0] - 2, original_position[1]))
                                     if piece.position[0] > self.position[0]:
-                                        self.position = (original_position[0] + 1, original_position[1])
-                                        if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                                            self.position = (original_position[0] + 2, original_position[1])
-                                            if not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                                        if self._is_valid_move(w_pieces, b_pieces, (original_position[0] + 1, original_position[1]), original_position, None):
+                                            if self._is_valid_move(w_pieces, b_pieces, (original_position[0] + 2, original_position[1]), original_position, None):
                                                 available_moves_list.append((original_position[0] + 2, original_position[1]))
-                                    self.position = original_position
                             else:
                                 to_break = True
                                 break
-
                     if to_break:
                         break
 
@@ -458,7 +369,7 @@ class King(Pieces):
                     y += direction_y
 
         return available_moves_list
-    
+
     def checking_moves(self, w_pieces, b_pieces):
         checking_moves_list = []
         directions = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]

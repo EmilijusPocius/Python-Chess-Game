@@ -106,8 +106,6 @@ def game_information(func):
                 file.write(f"Game was a stalemate\n")
             else:
                 file.write(f"Game was not finished.\n")
-            
-                file.write(f"{w_pieces}\n")
 
     return wrapper
 

@@ -1,10 +1,10 @@
 import pygame
-from abc import ABC, abstractmethod
 from images import w_images, b_images, board_image
-from pieces import Pawn, Rook, King, w_pieces, b_pieces, w_king, b_king, upgrade_pawn, king_in_check, reset_can_get_en_passant
+from pieces import *
 import time
 
-def draw_game(selected_piece, available_moves, checked_king_position, draw_white_picks, draw_black_picks, white_win, black_win, stalemate):
+def draw_game(selected_piece, available_moves, checked_king_position, draw_white_picks, draw_black_picks, white_win, black_win, stalemate, white_time, black_time):
+    screen.fill((255, 255, 255))
     screen.blit(board_image, (0, 0)) 
 
     if available_moves is not None:
@@ -15,15 +15,15 @@ def draw_game(selected_piece, available_moves, checked_king_position, draw_white
         transparent_surface = pygame.Surface((60, 60), pygame.SRCALPHA)
         transparent_surface.fill(color)
         for move in available_moves:
-            screen.blit(transparent_surface, (move[0] * 60 + 20, move[1] * 60 + 20))
-            pygame.draw.rect(screen, color, (move[0] * 60 + 20 - 1, move[1] * 60 + 20 - 1, 60 + 2, 60 + 2), 2)
+            screen.blit(transparent_surface, (move[0] * 60 +BORDER_PIXEL_OFFSET, move[1] * 60 + BORDER_PIXEL_OFFSET))
+            pygame.draw.rect(screen, color, (move[0] * 60 + BORDER_PIXEL_OFFSET - 1, move[1] * 60 + BORDER_PIXEL_OFFSET - 1, 60 + 2, 60 + 2), 2)
     if checked_king_position != (-10, -10):
-        pygame.draw.rect(screen, (255, 0, 0), (checked_king_position[0] * 60 + 20 - 1, checked_king_position[1] * 60 + 20 - 1, 60 + 2, 60 + 2), 2)
+        pygame.draw.rect(screen, (255, 0, 0), (checked_king_position[0] * 60 + BORDER_PIXEL_OFFSET - 1, checked_king_position[1] * 60 + BORDER_PIXEL_OFFSET - 1, 60 + 2, 60 + 2), 2)
     
     for piece in w_pieces + b_pieces:
-        screen.blit(piece.image, (piece.position[0] * 60 + 20, piece.position[1] * 60 + 20))
+        screen.blit(piece.image, (piece.position[0] * 60 + BORDER_PIXEL_OFFSET, piece.position[1] * 60 + BORDER_PIXEL_OFFSET))
     if selected_piece is not None:
-        screen.blit(selected_piece.image, (selected_piece.position[0] * 60 + 20, selected_piece.position[1] * 60 + 20))
+        screen.blit(selected_piece.image, (selected_piece.position[0] * 60 + BORDER_PIXEL_OFFSET, selected_piece.position[1] * 60 + BORDER_PIXEL_OFFSET))
 
     if draw_white_picks:
         pygame.draw.rect(screen, (100, 60, 30), (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60*4, 60))
@@ -44,6 +44,12 @@ def draw_game(selected_piece, available_moves, checked_king_position, draw_white
         for i in range(0, 181, 60):
             screen.blit(b_images[image_index], (SCREEN_WIDTH / 2 - 120 + i, SCREEN_HEIGHT / 2 - 30))
             image_index += 1
+
+    white_time_text = time_font.render(str(white_time), True, (255, 255, 255))
+    screen.blit(white_time_text, (5, SCREEN_HEIGHT - 40))
+
+    black_time_text = time_font.render(str(black_time), True, (0, 0, 0))
+    screen.blit(black_time_text, (5, 0))
 
     if white_win or black_win or stalemate:
         if white_win:
@@ -68,10 +74,22 @@ def draw_game(selected_piece, available_moves, checked_king_position, draw_white
 
     pygame.display.flip()
 
+def read_time_settings():
+    try:
+        with open("time.txt", 'r') as file:
+            lines = file.readlines()
+            white_time = int(lines[0].strip())
+            black_time = int(lines[1].strip())
+    except (ValueError, FileNotFoundError, IndexError):
+        white_time = 600
+        black_time = 600
+
+    return white_time, black_time
+
 def game_information(func):
     def wrapper(*args, **kwargs):
         start = time.time()
-        white_move_count, black_move_count, white_win, black_win, stalemate = func(*args, **kwargs)
+        white_move_count, black_move_count, white_win, black_win, stalemate, w_pieces, b_pieces = func(*args, **kwargs)
         end = time.time()
         seconds = end - start
         minutes = seconds // 60
@@ -88,6 +106,9 @@ def game_information(func):
                 file.write(f"Game was a stalemate\n")
             else:
                 file.write(f"Game was not finished.\n")
+            
+                file.write(f"{w_pieces}\n")
+
     return wrapper
 
 @game_information
@@ -105,29 +126,47 @@ def main():
     checked_king_position = (-10, -10)
     white_move_count = 0
     black_move_count = 0
+    white_time, black_time = read_time_settings()
+    last_update_time = time.time()
+    elapsed_time = 0
+
     while running:
-        draw_game(selected_piece, available_moves, checked_king_position, draw_white_picks, draw_black_picks, white_win, black_win, stalemate)
+        draw_game(selected_piece, available_moves, checked_king_position, draw_white_picks, draw_black_picks, white_win, black_win, stalemate, white_time, black_time)
+
+        current_time = time.time()
+        elapsed_time += current_time - last_update_time
+        if elapsed_time >= 1:
+            elapsed_time = 0
+            if white_turn and white_time > 0:
+                white_time -= 1
+                if white_time <= 0:
+                    black_win = True
+            elif not white_turn and black_time > 0:
+                black_time -= 1
+                if black_time <= 0:
+                    white_win = True
+        last_update_time = current_time
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                return white_move_count, black_move_count, white_win, black_win, stalemate
+                return white_move_count, black_move_count, white_win, black_win, stalemate, w_pieces, b_pieces
             if not (white_win or black_win or stalemate):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if not (draw_white_picks or draw_black_picks):
                             if white_turn:
                                 for piece in w_pieces:
-                                    if  piece.position[0] * 60 + 20 <= event.pos[0] <= piece.position[0] * 60 + 60 + 20 \
-                                    and piece.position[1] * 60 + 20 <= event.pos[1] <= piece.position[1] * 60 + 60 + 20:
+                                    if  piece.position[0] * 60 + BORDER_PIXEL_OFFSET <= event.pos[0] <= piece.position[0] * 60 + 60 + BORDER_PIXEL_OFFSET \
+                                    and piece.position[1] * 60 + BORDER_PIXEL_OFFSET <= event.pos[1] <= piece.position[1] * 60 + 60 + BORDER_PIXEL_OFFSET:
                                         selected_piece = piece
                                         original_position = selected_piece.position
                                         available_moves = selected_piece.available_moves(w_pieces, b_pieces)
 
                             if not white_turn:
                                 for piece in b_pieces:
-                                    if  piece.position[0] * 60 + 20 <= event.pos[0] <= piece.position[0] * 60 + 60 + 20 \
-                                    and piece.position[1] * 60 + 20 <= event.pos[1] <= piece.position[1] * 60 + 60 + 20:
+                                    if  piece.position[0] * 60 + BORDER_PIXEL_OFFSET <= event.pos[0] <= piece.position[0] * 60 + 60 + BORDER_PIXEL_OFFSET \
+                                    and piece.position[1] * 60 + BORDER_PIXEL_OFFSET <= event.pos[1] <= piece.position[1] * 60 + 60 + BORDER_PIXEL_OFFSET:
                                         selected_piece = piece
                                         original_position = selected_piece.position
                                         available_moves = selected_piece.available_moves(w_pieces, b_pieces)
@@ -155,7 +194,7 @@ def main():
                     
                 if event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1 and selected_piece is not None:
-                        move_to_position = ((event.pos[0] - 20) // 60), ((event.pos[1] - 20) // 60)
+                        move_to_position = ((event.pos[0] - BORDER_PIXEL_OFFSET) // 60), ((event.pos[1] - BORDER_PIXEL_OFFSET) // 60)
                         if move_to_position in available_moves:
                             if isinstance(selected_piece, Pawn):
                                 if selected_piece.color == "w":
@@ -231,39 +270,42 @@ def main():
                         available_moves = None
                         selected_piece = None
 
+                    if white_turn:
+                        all_available_moves = []
+                        for piece in w_pieces:
+                            all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
+                        if not any(all_available_moves) and king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                            black_win = True
+                        elif not any(all_available_moves) and not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                            stalemate = True
+                    elif not white_turn:
+                        all_available_moves = []
+                        for piece in b_pieces:
+                            all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
+                        if not any(all_available_moves) and king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                            white_win = True
+                        elif not any(all_available_moves) and not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                            stalemate = True
+
         if selected_piece is not None:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            selected_piece.position = (mouse_x - 50) / 60, (mouse_y - 50) / 60
-            if (mouse_x < 20 or mouse_x > 480 + 20 or mouse_y < 20 or mouse_y > 480 + 20):
+            selected_piece.position = (mouse_x - BORDER_PIXEL_OFFSET - 30) / 60, (mouse_y - BORDER_PIXEL_OFFSET - 30) / 60
+            if (mouse_x < BORDER_PIXEL_OFFSET or mouse_x > 480 + BORDER_PIXEL_OFFSET or mouse_y < BORDER_PIXEL_OFFSET or mouse_y > 480 + BORDER_PIXEL_OFFSET):
                 selected_piece.position = original_position
                 available_moves = None
                 selected_piece = None
         
-        if white_turn:
-            all_available_moves = []
-            for piece in w_pieces:
-                all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
-            if not any(all_available_moves) and king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                black_win = True
-            elif not any(all_available_moves) and not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                stalemate = True
-        elif not white_turn:
-            all_available_moves = []
-            for piece in b_pieces:
-                all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
-            if not any(all_available_moves) and king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                white_win = True
-            elif not any(all_available_moves) and not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                stalemate = True
 
         clock.tick(60) 
     
 pygame.init()
 pygame.font.init() 
-SCREEN_WIDTH = 520
-SCREEN_HEIGHT = 520
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 600
+BORDER_PIXEL_OFFSET = 60
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 my_font = pygame.font.SysFont('Gill Sans', 100)
+time_font = pygame.font.SysFont('Gill Sans', 35)
 pygame.display.set_caption("Chess")
 pygame.display.set_icon(b_images[2])
 clock = pygame.time.Clock()

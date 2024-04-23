@@ -3,9 +3,11 @@ from images import w_images, b_images, board_image
 from pieces import *
 import time
 
-def draw_game(selected_piece, available_moves, checked_king_position, draw_white_picks, draw_black_picks, white_win, black_win, stalemate, white_time, black_time):
+def draw_game(selected_piece, available_moves, checked_king_position,
+              draw_white_picks, draw_black_picks, white_win, black_win,
+              stalemate, white_time, black_time):
     screen.fill((255, 255, 255))
-    screen.blit(board_image, (0, 0)) 
+    screen.blit(board_image, (0, 0))
 
     if available_moves is not None:
         if selected_piece.color == "w":
@@ -15,31 +17,49 @@ def draw_game(selected_piece, available_moves, checked_king_position, draw_white
         transparent_surface = pygame.Surface((60, 60), pygame.SRCALPHA)
         transparent_surface.fill(color)
         for move in available_moves:
-            screen.blit(transparent_surface, (move[0] * 60 +BORDER_PIXEL_OFFSET, move[1] * 60 + BORDER_PIXEL_OFFSET))
-            pygame.draw.rect(screen, color, (move[0] * 60 + BORDER_PIXEL_OFFSET - 1, move[1] * 60 + BORDER_PIXEL_OFFSET - 1, 60 + 2, 60 + 2), 2)
+            screen.blit(transparent_surface,
+                        (move[0] * 60 + BORDER_PIXEL_OFFSET,
+                         move[1] * 60 + BORDER_PIXEL_OFFSET))
+            pygame.draw.rect(screen, color,
+                             (move[0] * 60 + BORDER_PIXEL_OFFSET - 1,
+                              move[1] * 60 + BORDER_PIXEL_OFFSET - 1,
+                              60 + 2, 60 + 2), 2)
     if checked_king_position != (-10, -10):
-        pygame.draw.rect(screen, (255, 0, 0), (checked_king_position[0] * 60 + BORDER_PIXEL_OFFSET - 1, checked_king_position[1] * 60 + BORDER_PIXEL_OFFSET - 1, 60 + 2, 60 + 2), 2)
-    
+        pygame.draw.rect(screen, (255, 0, 0),
+                         (checked_king_position[0] * 60 + BORDER_PIXEL_OFFSET - 1,
+                          checked_king_position[1] * 60 + BORDER_PIXEL_OFFSET - 1,
+                          60 + 2, 60 + 2), 2)
+
     for piece in w_pieces + b_pieces:
-        screen.blit(piece.image, (piece.position[0] * 60 + BORDER_PIXEL_OFFSET, piece.position[1] * 60 + BORDER_PIXEL_OFFSET))
+        screen.blit(piece.image, (piece.position[0] * 60 + BORDER_PIXEL_OFFSET,
+                                   piece.position[1] * 60 + BORDER_PIXEL_OFFSET))
     if selected_piece is not None:
-        screen.blit(selected_piece.image, (selected_piece.position[0] * 60 + BORDER_PIXEL_OFFSET, selected_piece.position[1] * 60 + BORDER_PIXEL_OFFSET))
+        screen.blit(selected_piece.image, (selected_piece.position[0] * 60 + BORDER_PIXEL_OFFSET,
+                                           selected_piece.position[1] * 60 + BORDER_PIXEL_OFFSET))
 
     if draw_white_picks:
-        pygame.draw.rect(screen, (100, 60, 30), (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60*4, 60))
+        pygame.draw.rect(screen, (100, 60, 30),
+                         (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60 * 4, 60))
         for i in range(60, 181, 60):
-            pygame.draw.line(screen, (0, 0, 0), (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30), (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30 + 59), 2)
-        pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60*4, 60), 3)
+            pygame.draw.line(screen, (0, 0, 0),
+                             (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30),
+                             (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30 + 59), 2)
+        pygame.draw.rect(screen, (0, 0, 0),
+                         (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60 * 4, 60), 3)
         image_index = 1
         for i in range(0, 181, 60):
             screen.blit(w_images[image_index], (SCREEN_WIDTH / 2 - 120 + i, SCREEN_HEIGHT / 2 - 30))
             image_index += 1
 
     if draw_black_picks:
-        pygame.draw.rect(screen, (100, 60, 30), (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60*4, 60))
+        pygame.draw.rect(screen, (100, 60, 30),
+                         (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60 * 4, 60))
         for i in range(60, 181, 60):
-            pygame.draw.line(screen, (0, 0, 0), (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30), (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30 + 59), 2)
-        pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60*4, 60), 3)
+            pygame.draw.line(screen, (0, 0, 0),
+                             (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30),
+                             (SCREEN_WIDTH / 2 - 120 + i - 1, SCREEN_HEIGHT / 2 - 30 + 59), 2)
+        pygame.draw.rect(screen, (0, 0, 0),
+                         (SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 - 30, 60 * 4, 60), 3)
         image_index = 1
         for i in range(0, 181, 60):
             screen.blit(b_images[image_index], (SCREEN_WIDTH / 2 - 120 + i, SCREEN_HEIGHT / 2 - 30))
@@ -70,7 +90,6 @@ def draw_game(selected_piece, available_moves, checked_king_position, draw_white
         screen.blit(text_background, text_background_rect)
         screen.blit(text, text_rect)
         pygame.draw.rect(screen, (0, 0, 0), text_background_rect, 4)
-
 
     pygame.display.flip()
 

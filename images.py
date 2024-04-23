@@ -1,8 +1,10 @@
 import pygame
 import os
 
+# Load board image
 board_image = pygame.image.load(os.path.join("images", "chessboard.png"))
 
+# Load white pieces images
 w_pawn_image = pygame.image.load(os.path.join("images", "w_pawn.png"))
 w_rook_image = pygame.image.load(os.path.join("images", "w_rook.png"))
 w_knight_image = pygame.image.load(os.path.join("images", "w_knight.png"))
@@ -11,6 +13,7 @@ w_queen_image = pygame.image.load(os.path.join("images", "w_queen.png"))
 w_king_image = pygame.image.load(os.path.join("images", "w_king.png"))
 w_images = [w_pawn_image, w_rook_image, w_knight_image, w_bishop_image, w_queen_image, w_king_image]
 
+# Load black pieces images
 b_pawn_image = pygame.image.load(os.path.join("images", "b_pawn.png"))
 b_rook_image = pygame.image.load(os.path.join("images", "b_rook.png"))
 b_knight_image = pygame.image.load(os.path.join("images", "b_knight.png"))

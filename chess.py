@@ -65,11 +65,22 @@ def draw_game(selected_piece, available_moves, checked_king_position,
             screen.blit(b_images[image_index], (SCREEN_WIDTH / 2 - 120 + i, SCREEN_HEIGHT / 2 - 30))
             image_index += 1
 
-    white_time_text = time_font.render(str(white_time), True, (255, 255, 255))
-    screen.blit(white_time_text, (5, SCREEN_HEIGHT - 40))
+    white_time_text = my_time_font.render(str(white_time), True, (255, 255, 255))
+    screen.blit(white_time_text, (SCREEN_WIDTH - white_time_text.get_width(), SCREEN_HEIGHT - 40))
 
-    black_time_text = time_font.render(str(black_time), True, (0, 0, 0))
-    screen.blit(black_time_text, (5, 0))
+    black_time_text = my_time_font.render(str(black_time), True, (0, 0, 0))
+    screen.blit(black_time_text, (SCREEN_WIDTH - black_time_text.get_width(), 0))
+
+    forfeit_text = my_forfeit_font.render("Forfeit", True, (0, 0, 0))
+    forfeit_rect = forfeit_text.get_rect()
+    forfeit_background = pygame.Surface((forfeit_rect.width + 20, forfeit_rect.height + 10))
+    forfeit_background.fill((250, 200, 125))
+    forfeit_background_rect = forfeit_background.get_rect()
+    x, y = (0, 0)
+    forfeit_background_rect.topleft = (x, y)
+    screen.blit(forfeit_background, forfeit_background_rect)
+    screen.blit(forfeit_text, ((x + 10), (y + 5) ),forfeit_rect)
+    pygame.draw.rect(screen, (0, 0, 0), forfeit_background_rect, 2)
 
     if white_win or black_win or stalemate:
         if white_win:
@@ -99,6 +110,9 @@ def read_time_settings():
             lines = file.readlines()
             white_time = int(lines[0].strip())
             black_time = int(lines[1].strip())
+            if len(str(white_time)) and len(str(black_time)) > 10:
+                white_time = 600
+                black_time = 600
     except (ValueError, FileNotFoundError, IndexError):
         white_time = 600
         black_time = 600
@@ -150,29 +164,32 @@ def main():
     while running:
         draw_game(selected_piece, available_moves, checked_king_position, draw_white_picks, draw_black_picks, white_win, black_win, stalemate, white_time, black_time)
 
-        current_time = time.time()
-        elapsed_time += current_time - last_update_time
-        if elapsed_time >= 1:
-            elapsed_time = 0
-            if white_turn and white_time > 0:
-                white_time -= 1
-                if white_time <= 0:
-                    black_win = True
-            elif not white_turn and black_time > 0:
-                black_time -= 1
-                if black_time <= 0:
-                    white_win = True
-        last_update_time = current_time
+        if not (white_win or black_win or stalemate):
+            current_time = time.time()
+            elapsed_time += current_time - last_update_time
+            if elapsed_time >= 1:
+                elapsed_time = 0
+                if white_turn and white_time > 0:
+                    white_time -= 1
+                    if white_time <= 0:
+                        black_win = True
+                elif not white_turn and black_time > 0:
+                    black_time -= 1
+                    if black_time <= 0:
+                        white_win = True
+            last_update_time = current_time
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 return white_move_count, black_move_count, white_win, black_win, stalemate, w_pieces, b_pieces
-            if not (white_win or black_win or stalemate):
-                if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if not (white_win or black_win or stalemate):
                     if event.button == 1:
                         if not (draw_white_picks or draw_black_picks):
                             if white_turn:
+                                if (0 <= event.pos[0] <= 77) and (0 <= event.pos[1] <= 39):
+                                    black_win = True
                                 for piece in w_pieces:
                                     if  piece.position[0] * 60 + BORDER_PIXEL_OFFSET <= event.pos[0] <= piece.position[0] * 60 + 60 + BORDER_PIXEL_OFFSET \
                                     and piece.position[1] * 60 + BORDER_PIXEL_OFFSET <= event.pos[1] <= piece.position[1] * 60 + 60 + BORDER_PIXEL_OFFSET:
@@ -181,6 +198,8 @@ def main():
                                         available_moves = selected_piece.available_moves(w_pieces, b_pieces)
 
                             if not white_turn:
+                                if (0 <= event.pos[0] <= 77) and (0 <= event.pos[1] <= 39):
+                                    white_win = True
                                 for piece in b_pieces:
                                     if  piece.position[0] * 60 + BORDER_PIXEL_OFFSET <= event.pos[0] <= piece.position[0] * 60 + 60 + BORDER_PIXEL_OFFSET \
                                     and piece.position[1] * 60 + BORDER_PIXEL_OFFSET <= event.pos[1] <= piece.position[1] * 60 + 60 + BORDER_PIXEL_OFFSET:
@@ -188,7 +207,8 @@ def main():
                                         original_position = selected_piece.position
                                         available_moves = selected_piece.available_moves(w_pieces, b_pieces)
                                         break
-                        else:
+
+                        elif draw_white_picks or draw_black_picks:
                             upgrade_index = 1
                             for i in range(0, 181, 60):
                                 if (SCREEN_WIDTH / 2 - 120 + i) < event.pos[0] < (SCREEN_WIDTH / 2 - 120 + i + 60) \
@@ -209,100 +229,100 @@ def main():
                                 else:
                                     checked_king_position = (-10, -10)
                     
-                if event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == 1 and selected_piece is not None:
-                        move_to_position = ((event.pos[0] - BORDER_PIXEL_OFFSET) // 60), ((event.pos[1] - BORDER_PIXEL_OFFSET) // 60)
-                        if move_to_position in available_moves:
-                            if isinstance(selected_piece, Pawn):
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1 and selected_piece is not None:
+                    move_to_position = ((event.pos[0] - BORDER_PIXEL_OFFSET) // 60), ((event.pos[1] - BORDER_PIXEL_OFFSET) // 60)
+                    if move_to_position in available_moves:
+                        if isinstance(selected_piece, Pawn):
+                            if selected_piece.color == "w":
+                                if original_position[1] == 6 and move_to_position[1] == 4:
+                                    selected_piece.can_get_en_passant = True 
+                                elif move_to_position[1] == 0:
+                                    draw_white_picks = True
+                            elif selected_piece.color == "b":
+                                if original_position[1] == 1 and move_to_position[1] == 3:
+                                    selected_piece.can_get_en_passant = True 
+                                elif move_to_position[1] == 7:
+                                    draw_black_picks = True
+                        elif isinstance(selected_piece, Rook):
+                            selected_piece.can_castle = False
+                        elif isinstance(selected_piece, King):
+                            if selected_piece.can_castle:
                                 if selected_piece.color == "w":
-                                    if original_position[1] == 6 and move_to_position[1] == 4:
-                                        selected_piece.can_get_en_passant = True 
-                                    elif move_to_position[1] == 0:
-                                        draw_white_picks = True
+                                    if move_to_position[0] == 2:
+                                        for piece in w_pieces:
+                                            if isinstance(piece, Rook) and piece.position[0] < move_to_position[0]:
+                                                piece.position = ((move_to_position[0] + 1, move_to_position[1]))
+                                                piece.can_castle = False
+                                                break
+                                    elif move_to_position[0] == 6:
+                                        for piece in w_pieces:
+                                            if isinstance(piece, Rook) and piece.position[0] > move_to_position[0]:
+                                                piece.position = ((move_to_position[0] - 1, move_to_position[1]))
+                                                piece.can_castle = False
+                                                break
                                 elif selected_piece.color == "b":
-                                    if original_position[1] == 1 and move_to_position[1] == 3:
-                                        selected_piece.can_get_en_passant = True 
-                                    elif move_to_position[1] == 7:
-                                        draw_black_picks = True
-                            elif isinstance(selected_piece, Rook):
-                                selected_piece.can_castle = False
-                            elif isinstance(selected_piece, King):
-                                if selected_piece.can_castle:
-                                    if selected_piece.color == "w":
-                                        if move_to_position[0] == 2:
-                                            for piece in w_pieces:
-                                                if isinstance(piece, Rook) and piece.position[0] < move_to_position[0]:
-                                                    piece.position = ((move_to_position[0] + 1, move_to_position[1]))
-                                                    piece.can_castle = False
-                                                    break
-                                        elif move_to_position[0] == 6:
-                                            for piece in w_pieces:
-                                                if isinstance(piece, Rook) and piece.position[0] > move_to_position[0]:
-                                                    piece.position = ((move_to_position[0] - 1, move_to_position[1]))
-                                                    piece.can_castle = False
-                                                    break
-                                    elif selected_piece.color == "b":
-                                        if move_to_position[0] == 2:
-                                            for piece in b_pieces:
-                                                if isinstance(piece, Rook) and piece.position[0] < move_to_position[0]:
-                                                    piece.position = ((move_to_position[0] + 1, move_to_position[1]))
-                                                    piece.can_castle = False
-                                                    break
-                                        elif move_to_position[0] == 6:
-                                            for piece in b_pieces:
-                                                if isinstance(piece, Rook) and piece.position[0] > move_to_position[0]:
-                                                    piece.position = ((move_to_position[0] - 1, move_to_position[1]))
-                                                    piece.can_castle = False
-                                                    break
-                                selected_piece.can_castle = False
+                                    if move_to_position[0] == 2:
+                                        for piece in b_pieces:
+                                            if isinstance(piece, Rook) and piece.position[0] < move_to_position[0]:
+                                                piece.position = ((move_to_position[0] + 1, move_to_position[1]))
+                                                piece.can_castle = False
+                                                break
+                                    elif move_to_position[0] == 6:
+                                        for piece in b_pieces:
+                                            if isinstance(piece, Rook) and piece.position[0] > move_to_position[0]:
+                                                piece.position = ((move_to_position[0] - 1, move_to_position[1]))
+                                                piece.can_castle = False
+                                                break
+                            selected_piece.can_castle = False
 
-                            selected_piece.position = move_to_position
-                            for piece in w_pieces + b_pieces:
-                                if piece.position == move_to_position and piece is not selected_piece:
-                                    w_pieces.remove(piece) if piece in w_pieces else b_pieces.remove(piece)
-                                if isinstance(piece, Pawn) and isinstance(selected_piece, Pawn) and piece.can_get_en_passant:
-                                    if piece.color == "w":
-                                        if piece.position == (move_to_position[0], move_to_position[1] - 1):
-                                            w_pieces.remove(piece)
-                                    elif piece.color == "b":
-                                        if piece.position == (move_to_position[0], move_to_position[1] + 1):
-                                            b_pieces.remove(piece)
-                            white_move_count += 1 if white_turn else 0
-                            black_move_count += 1 if not white_turn else 0
-                            white_turn = not white_turn
-                            if white_turn:
-                                if king_in_check(white_turn, w_pieces, b_pieces, w_king, b_king):
-                                    checked_king_position = w_king.position
-                                else:
-                                    checked_king_position = (-10, -10)
-                            elif not white_turn:
-                                if king_in_check(white_turn, w_pieces, b_pieces, w_king, b_king):
-                                    checked_king_position = b_king.position
-                                else:
-                                    checked_king_position = (-10, -10)
-                            reset_can_get_en_passant(white_turn, w_pieces, b_pieces)
-                        else:
-                            selected_piece.position = original_position
+                        selected_piece.position = move_to_position
+                        for piece in w_pieces + b_pieces:
+                            if piece.position == move_to_position and piece is not selected_piece:
+                                w_pieces.remove(piece) if piece in w_pieces else b_pieces.remove(piece)
+                            if isinstance(piece, Pawn) and isinstance(selected_piece, Pawn) and piece.can_get_en_passant:
+                                if piece.color == "w":
+                                    if piece.position == (move_to_position[0], move_to_position[1] - 1):
+                                        w_pieces.remove(piece)
+                                elif piece.color == "b":
+                                    if piece.position == (move_to_position[0], move_to_position[1] + 1):
+                                        b_pieces.remove(piece)
+                        white_move_count += 1 if white_turn else 0
+                        black_move_count += 1 if not white_turn else 0
+                        white_turn = not white_turn
+                        if white_turn:
+                            if king_in_check(white_turn, w_pieces, b_pieces, w_king, b_king):
+                                checked_king_position = w_king.position
+                            else:
+                                checked_king_position = (-10, -10)
+                        elif not white_turn:
+                            if king_in_check(white_turn, w_pieces, b_pieces, w_king, b_king):
+                                checked_king_position = b_king.position
+                            else:
+                                checked_king_position = (-10, -10)
+                        reset_can_get_en_passant(white_turn, w_pieces, b_pieces)
+                    else:
+                        selected_piece.position = original_position
 
-                        available_moves = None
-                        selected_piece = None
+                    available_moves = None
+                    selected_piece = None
 
-                    if white_turn:
-                        all_available_moves = []
-                        for piece in w_pieces:
-                            all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
-                        if not any(all_available_moves) and king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                            black_win = True
-                        elif not any(all_available_moves) and not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
-                            stalemate = True
-                    elif not white_turn:
-                        all_available_moves = []
-                        for piece in b_pieces:
-                            all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
-                        if not any(all_available_moves) and king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                            white_win = True
-                        elif not any(all_available_moves) and not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
-                            stalemate = True
+                if white_turn:
+                    all_available_moves = []
+                    for piece in w_pieces:
+                        all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
+                    if not any(all_available_moves) and king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                        black_win = True
+                    elif not any(all_available_moves) and not king_in_check(True, w_pieces, b_pieces, w_king, b_king):
+                        stalemate = True
+                elif not white_turn:
+                    all_available_moves = []
+                    for piece in b_pieces:
+                        all_available_moves.append(piece.available_moves(w_pieces, b_pieces))
+                    if not any(all_available_moves) and king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                        white_win = True
+                    elif not any(all_available_moves) and not king_in_check(False, w_pieces, b_pieces, w_king, b_king):
+                        stalemate = True
 
         if selected_piece is not None:
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -322,7 +342,8 @@ SCREEN_HEIGHT = 600
 BORDER_PIXEL_OFFSET = 60
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 my_font = pygame.font.SysFont('Gill Sans', 100)
-time_font = pygame.font.SysFont('Gill Sans', 35)
+my_time_font = pygame.font.SysFont('Gill Sans', 35)
+my_forfeit_font = pygame.font.SysFont('Gill Sans', 25)
 pygame.display.set_caption("Chess")
 pygame.display.set_icon(b_images[2])
 clock = pygame.time.Clock()

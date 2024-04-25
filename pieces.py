@@ -326,8 +326,10 @@ class King(Pieces):
                             if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, None):
                                 available_moves_list.append((x, y))
                         elif (x, y) in [(piece.position[0], piece.position[1]) for piece in w_pieces]:
-                            if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
-                                available_moves_list.append((x, y))
+                            for piece in w_pieces:
+                                if (x, y) == piece.position:
+                                    if self._is_valid_move(w_pieces, b_pieces, (x, y), original_position, piece):
+                                        available_moves_list.append((x, y))
         # Castling
         if not king_in_check(True if self.color == "w" else False, w_pieces, b_pieces, w_king, b_king) and self.can_castle:
             directions = [(-1, 0), (1, 0)]

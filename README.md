@@ -12,11 +12,22 @@ My application is a chess game implemented in Python using the Pygame library. I
 
 ### How to run the program?
 
-Ensure you have Python installed on your system. If not, you can download and install it from the official Python website (https://www.python.org/). Install Pygame by following the installation guide provided on the Pygame website (https://www.pygame.org/wiki/GettingStarted). You can install it using pip, the Python package installer, by running the following command in your terminal or command prompt:
+○ Ensure you have Python installed on your system. If not, you can download and install it from the official Python website (https://www.python.org/). 
+
+○ Install Pygame by following the installation guide provided on the Pygame website (https://www.pygame.org/wiki/GettingStarted). 
+
+You can install it using pip, the Python package installer, by running the following command in your terminal or command prompt:
+
 pip install pygame
-Download the source code for the chess game from the repository.Navigate to the directory containing the 'chess.py' file using the terminal or command prompt.
-Run the program by executing the following command:
+
+○ Download the source code for the chess game from the repository. 
+
+○ Navigate to the directory containing the 'chess.py' file using the terminal or command prompt.
+
+○ Run the program by executing the following command:
+
 python chess.py
+
 For example:
 
 C: \ChessGame> python chess.py

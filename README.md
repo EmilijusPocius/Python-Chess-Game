@@ -16,9 +16,9 @@ My application is a chess game implemented in Python using the Pygame library. I
 
 2) Install Pygame by following the installation guide provided on the Pygame website (https://www.pygame.org/wiki/GettingStarted). 
 
-You can install it using pip, the Python package installer, by running the following command in your terminal or command prompt:
+	You can install it using pip, the Python package installer, by running the following command in your terminal or command prompt:
 
-pip install pygame
+	pip install pygame
 
 3) Download the source code for the chess game from the repository. 
 
@@ -26,11 +26,11 @@ pip install pygame
 
 5) Run the program by executing the following command:
 
-python chess.py
+	python chess.py
 
-For example:
+	For example:
 
-C: \ChessGame> python chess.py
+	C: \ChessGame> python chess.py
 
 ### How to use the program?
 

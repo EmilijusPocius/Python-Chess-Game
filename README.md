@@ -18,6 +18,7 @@ Download the source code for the chess game from the repository.Navigate to the 
 Run the program by executing the following command:
 python chess.py
 For example:
+
 C: \ChessGame> python chess.py
 
 ### How to use the program?

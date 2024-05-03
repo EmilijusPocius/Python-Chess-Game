@@ -249,7 +249,11 @@ The completion of this coursework has not only reinforced fundamental programmin
 Through this coursework, I have gained a solid understanding of Object-Oriented Programming principles and the fundamentals of Python syntax. Working with the Pygame library has provided valuable insights into game development, including UI design and event handling. The resulting chess game showcases my ability to implement complex game logic and create an engaging user experience. Looking ahead, future prospects for the program include integrating AI opponents with varying difficulty levels to enable single-player gameplay, enhancing the overall experience and expanding the game's appeal.
 
 ## Resources:
+
 https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent 
+
 https://en.wikipedia.org/wiki/File:Chessboard480.svg 
+
 https://www.pygame.org/docs/ 
+
 https://chat.openai.com/ 
